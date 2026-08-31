@@ -19,6 +19,9 @@
     "vite": "^8.2.2"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.122.0",
+    "@netlify/functions": "^6.0.0",
+    "@phosphor-icons/react": "^2.1.10",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   }
