@@ -105,8 +105,14 @@ export function parseAnalysis(raw: unknown): AnalysisResult {
         .filter((item): item is CompetencyItem => item !== null)
     : [];
 
+  const readiness =
+    typeof record.readinessScore === "number" && Number.isFinite(record.readinessScore)
+      ? Math.max(0, Math.min(100, Math.round(record.readinessScore)))
+      : 0;
+
   return {
     summary,
+    readinessScore: readiness,
     requiredCompetencies: asStringArray(record.requiredCompetencies),
     strengths,
     gaps,

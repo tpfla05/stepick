@@ -54,7 +54,7 @@ export function PortfolioFields({ value, onChange, onBack, onSubmit, busy }: Pro
   }
 
   return (
-    <form onSubmit={submit} className="space-y-7">
+    <form onSubmit={submit} className="space-y-7 rounded-[20px] border border-line bg-ink-2 p-8 text-left">
       <p className="text-sm text-muted">
         URL, 텍스트, 파일 중 하나만 있어도 됩니다. 확인된 내용만 경험으로 읽습니다.
       </p>
@@ -132,7 +132,7 @@ export function PortfolioFields({ value, onChange, onBack, onSubmit, busy }: Pro
             {files.map((file, index) => (
               <li
                 key={`${file.name}-${index}`}
-                className="flex items-center justify-between rounded-lg bg-ink-2 px-3 py-2 text-sm"
+                className="flex items-center justify-between rounded-lg bg-ink px-3 py-2 text-sm"
               >
                 <span className="flex items-center gap-2">
                   <FilePdf size={16} className="text-lime" />

@@ -3,14 +3,15 @@
 
 @theme {
   --font-sans: "Pretendard Variable", Pretendard, system-ui, sans-serif;
-  --color-ink: #0f1412;
-  --color-ink-2: #17201c;
-  --color-moss: #2f6f57;
-  --color-moss-hover: #378266;
-  --color-lime: #c8f06c;
-  --color-paper: #eef4ea;
-  --color-muted: #8a9a90;
-  --color-line: rgb(238 244 234 / 0.12);
+  --color-ink: #f7f8f5;
+  --color-ink-2: #ffffff;
+  --color-moss: #5f8f24;
+  --color-moss-hover: #4f7a1c;
+  --color-lime: #5f8f24;
+  --color-paper: #17201c;
+  --color-muted: #667069;
+  --color-line: #e2e7e3;
+  --color-selected: #eff7e4;
 }
 
 html,
@@ -37,7 +38,7 @@ body {
   width: 100%;
   border-radius: 0.75rem;
   border: 1px solid var(--color-line);
-  background: var(--color-ink-2);
+  background: var(--color-ink);
   color: var(--color-paper);
   padding: 0.7rem 0.85rem;
   font: inherit;
@@ -49,15 +50,19 @@ body {
 }
 
 .field-input:focus {
-  border-color: rgb(200 240 108 / 0.45);
+  border-color: var(--color-lime);
 }
 
 .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 54px;
   border: 0;
   border-radius: 999px;
   background: var(--color-moss);
-  color: var(--color-paper);
-  padding: 0.65rem 1.15rem;
+  color: #ffffff;
+  padding: 0 1.25rem;
   font: inherit;
   font-size: 0.875rem;
   font-weight: 600;
@@ -74,18 +79,22 @@ body {
 }
 
 .btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 54px;
   border: 1px solid var(--color-line);
   border-radius: 999px;
-  background: transparent;
+  background: var(--color-ink-2);
   color: var(--color-paper);
-  padding: 0.65rem 1.15rem;
+  padding: 0 1.25rem;
   font: inherit;
   font-size: 0.875rem;
   cursor: pointer;
 }
 
 .btn-ghost:hover:not(:disabled) {
-  border-color: rgb(238 244 234 / 0.28);
+  border-color: var(--color-lime);
 }
 
 .btn-ghost:disabled {

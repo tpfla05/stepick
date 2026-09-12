@@ -7,7 +7,7 @@ type Props = {
 
 export function ActivityCard({ activity }: Props) {
   return (
-    <article className="flex flex-col rounded-2xl border border-line bg-ink-2/70 p-5">
+    <article className="flex h-full flex-col rounded-[20px] border border-line bg-ink-2 p-6 md:p-8">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs text-muted">{activity.category}</p>
@@ -38,7 +38,7 @@ export function ActivityCard({ activity }: Props) {
       {activity.relatedSkills.length > 0 ? (
         <ul className="mt-3 flex flex-wrap gap-1.5">
           {activity.relatedSkills.map((skill) => (
-            <li key={skill} className="rounded-full bg-moss/40 px-2.5 py-1 text-xs text-paper">
+            <li key={skill} className="rounded-full bg-selected px-2.5 py-1 text-xs text-lime">
               {skill}
             </li>
           ))}

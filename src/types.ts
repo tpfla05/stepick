@@ -53,6 +53,7 @@ export type CompetencyItem = {
 
 export type AnalysisResult = {
   summary: string;
+  readinessScore: number;
   requiredCompetencies: string[];
   strengths: CompetencyItem[];
   gaps: CompetencyItem[];
@@ -79,16 +80,16 @@ export type RecommendResult = {
 };
 
 export const CURRENT_STATUS_OPTIONS: Array<{ value: CurrentStatus; label: string }> = [
-  { value: "student", label: "재학" },
-  { value: "graduate", label: "졸업/취업 준비" },
-  { value: "career_change", label: "이직/전직" },
+  { value: "student", label: "대학생·재학" },
+  { value: "graduate", label: "졸업·취업 준비" },
+  { value: "career_change", label: "이직 준비" },
   { value: "employed", label: "재직 중" },
 ];
 
 export const PREP_STATUS_OPTIONS: Array<{ value: PrepStatus; label: string }> = [
-  { value: "portfolio_in_progress", label: "포트폴리오 준비 중" },
-  { value: "resume_not_started", label: "이력서 준비 전" },
-  { value: "applying", label: "지원 중" },
+  { value: "portfolio_in_progress", label: "포트폴리오를 만드는 중" },
+  { value: "resume_not_started", label: "이력서는 아직" },
+  { value: "applying", label: "이미 지원 중" },
 ];
 
 export const ACTIVITY_CATEGORIES: ActivityCategory[] = [

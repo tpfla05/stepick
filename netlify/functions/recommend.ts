@@ -30,6 +30,7 @@ export default async (req: Request) => {
   }
 
   const today = todayKst();
+  const focusedAnalysis = { ...analysis, gaps: analysis.gaps.slice(0, 3) };
 
   try {
     const message = await runClaude({
@@ -46,13 +47,13 @@ export default async (req: Request) => {
                 ? { urls: profile.portfolio.urls, text: profile.portfolio.text }
                 : undefined,
             }),
-            analysisJson: JSON.stringify(analysis),
+            analysisJson: JSON.stringify(focusedAnalysis),
           }),
         },
       ],
       tools: [
-        { type: "web_search_20260209", name: "web_search", max_uses: 6 },
-        { type: "web_fetch_20260209", name: "web_fetch", max_uses: 8 },
+        { type: "web_search_20260209", name: "web_search", max_uses: 4 },
+        { type: "web_fetch_20260209", name: "web_fetch", max_uses: 5 },
       ],
     });
 

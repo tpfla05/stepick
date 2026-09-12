@@ -1,4 +1,4 @@
-import type { FormEvent, ReactNode } from "react";
+import type { FormEvent } from "react";
 import {
   ACTIVITY_CATEGORIES,
   CURRENT_STATUS_OPTIONS,
@@ -8,6 +8,7 @@ import {
   type PrepStatus,
   type UserProfile,
 } from "../types.ts";
+import { Card, Choice, Question } from "./ui.tsx";
 
 type Props = {
   value: UserProfile;
@@ -35,143 +36,103 @@ export function ProfileForm({ value, onChange, onNext }: Props) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-7">
-      <Field label="희망 직무" hint="예: 프론트엔드 개발자, AI 서비스 기획">
-        <input
-          required
-          value={value.targetRole}
-          onChange={(event) => patch({ targetRole: event.target.value })}
-          className="field-input"
-          placeholder="목표 직무를 적어 주세요"
-        />
-      </Field>
-
-      <Field label="전공" hint="선택">
-        <input
-          value={value.major ?? ""}
-          onChange={(event) => patch({ major: event.target.value || null })}
-          className="field-input"
-          placeholder="전공이 있다면 적어 주세요"
-        />
-      </Field>
-
-      <fieldset>
-        <legend className="field-label">현재 상태</legend>
-        <div className="mt-2 grid gap-2 sm:grid-cols-2">
-          {CURRENT_STATUS_OPTIONS.map((option) => (
-            <Choice
-              key={option.value}
-              name="currentStatus"
-              checked={value.currentStatus === option.value}
-              onChange={() => patch({ currentStatus: option.value as CurrentStatus })}
-              label={option.label}
+    <form onSubmit={submit} className="space-y-4">
+      <Card title="목표">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Question label="어떤 직무를 목표로 하고 있나요?">
+            <input
+              required
+              value={value.targetRole}
+              onChange={(event) => patch({ targetRole: event.target.value })}
+              className="field-input"
+              placeholder="예: 프론트엔드 개발자, AI 서비스 기획"
             />
-          ))}
-        </div>
-      </fieldset>
-
-      <fieldset>
-        <legend className="field-label">준비 상태</legend>
-        <div className="mt-2 grid gap-2 sm:grid-cols-3">
-          {PREP_STATUS_OPTIONS.map((option) => (
-            <Choice
-              key={option.value}
-              name="prepStatus"
-              checked={value.prepStatus === option.value}
-              onChange={() => patch({ prepStatus: option.value as PrepStatus })}
-              label={option.label}
+          </Question>
+          <Question label="전공이 있다면 알려주세요" hint="없어도 괜찮아요">
+            <input
+              value={value.major ?? ""}
+              onChange={(event) => patch({ major: event.target.value || null })}
+              className="field-input"
+              placeholder="전공이 있다면 적어 주세요"
             />
-          ))}
+          </Question>
         </div>
-      </fieldset>
+      </Card>
 
-      <fieldset>
-        <legend className="field-label">포트폴리오</legend>
-        <p className="mt-1 text-sm text-muted">있으면 상세 경력은 건너뛰고 여기서 경험을 읽습니다.</p>
-        <div className="mt-2 grid gap-2 sm:grid-cols-2">
-          <Choice
-            name="hasPortfolio"
-            checked={value.hasPortfolio}
-            onChange={() => patch({ hasPortfolio: true, experience: undefined })}
-            label="있음"
-          />
-          <Choice
-            name="hasPortfolio"
-            checked={!value.hasPortfolio}
-            onChange={() => patch({ hasPortfolio: false, portfolio: undefined })}
-            label="없음"
-          />
-        </div>
-      </fieldset>
+      <Card title="지금 상황">
+        <Question label="지금은 어떤 상황인가요?">
+          <div className="grid gap-2 sm:grid-cols-2">
+            {CURRENT_STATUS_OPTIONS.map((option) => (
+              <Choice
+                key={option.value}
+                name="currentStatus"
+                checked={value.currentStatus === option.value}
+                onChange={() => patch({ currentStatus: option.value as CurrentStatus })}
+                label={option.label}
+              />
+            ))}
+          </div>
+        </Question>
+        <Question label="취업 준비는 어디까지 왔나요?">
+          <div className="grid gap-2 sm:grid-cols-3">
+            {PREP_STATUS_OPTIONS.map((option) => (
+              <Choice
+                key={option.value}
+                name="prepStatus"
+                checked={value.prepStatus === option.value}
+                onChange={() => patch({ prepStatus: option.value as PrepStatus })}
+                label={option.label}
+              />
+            ))}
+          </div>
+        </Question>
+        <Question label="포트폴리오가 있나요?">
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Choice
+              name="hasPortfolio"
+              checked={value.hasPortfolio}
+              onChange={() => patch({ hasPortfolio: true, experience: undefined })}
+              label="있어요"
+              hint="다음에서 자료를 볼게요"
+            />
+            <Choice
+              name="hasPortfolio"
+              checked={!value.hasPortfolio}
+              onChange={() => patch({ hasPortfolio: false, portfolio: undefined })}
+              label="없어요"
+              hint="경험만 적을게요"
+            />
+          </div>
+        </Question>
+      </Card>
 
-      <fieldset>
-        <legend className="field-label">관심 활동 유형</legend>
-        <p className="mt-1 text-sm text-muted">선택. 추천 범위만 좁힙니다.</p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {ACTIVITY_CATEGORIES.map((category) => {
-            const on = value.preferredCategories?.includes(category) ?? false;
-            return (
-              <button
-                key={category}
-                type="button"
-                onClick={() => toggleCategory(category)}
-                className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                  on
-                    ? "border-lime/40 bg-lime/15 text-lime"
-                    : "border-line text-muted hover:border-paper/20 hover:text-paper"
-                }`}
-              >
-                {category}
-              </button>
-            );
-          })}
-        </div>
-      </fieldset>
+      <Card title="관심 활동">
+        <Question label="관심 있는 활동이 있나요?" hint="선택이에요. 고르면 추천 범위만 좁혀요.">
+          <div className="flex flex-wrap gap-2">
+            {ACTIVITY_CATEGORIES.map((category) => {
+              const on = value.preferredCategories?.includes(category) ?? false;
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => toggleCategory(category)}
+                  className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                    on
+                      ? "border-lime bg-selected text-lime"
+                      : "border-line text-muted hover:border-lime/40 hover:text-paper"
+                  }`}
+                >
+                  {category}
+                </button>
+              );
+            })}
+          </div>
+        </Question>
+      </Card>
 
       <button type="submit" className="btn-primary w-full sm:w-auto">
-        다음
+        {value.hasPortfolio ? "다음: 포트폴리오 확인하기" : "다음: 경험 입력하기"}
       </button>
     </form>
-  );
-}
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: ReactNode;
-}) {
-  return (
-    <label className="block">
-      <span className="field-label">{label}</span>
-      {hint ? <span className="ml-2 text-xs text-muted">{hint}</span> : null}
-      <div className="mt-2">{children}</div>
-    </label>
-  );
-}
-
-function Choice({
-  name,
-  checked,
-  onChange,
-  label,
-}: {
-  name: string;
-  checked: boolean;
-  onChange: () => void;
-  label: string;
-}) {
-  return (
-    <label
-      className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2.5 text-sm transition-colors ${
-        checked ? "border-lime/40 bg-lime/10 text-paper" : "border-line text-muted hover:border-paper/20"
-      }`}
-    >
-      <input type="radio" name={name} checked={checked} onChange={onChange} className="accent-lime" />
-      {label}
-    </label>
   );
 }

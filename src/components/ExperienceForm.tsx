@@ -1,6 +1,7 @@
-import { useState, type FormEvent } from "react";
-import { Plus, Trash } from "@phosphor-icons/react";
+import { useState, type FormEvent, type ReactNode } from "react";
+import { CaretDown, Plus, Trash } from "@phosphor-icons/react";
 import type { ProjectExperience, UserProfile } from "../types.ts";
+import { Card } from "./ui.tsx";
 
 type Props = {
   value: UserProfile;
@@ -56,105 +57,119 @@ export function ExperienceForm({ value, onChange, onBack, onSubmit, busy }: Prop
   }
 
   return (
-    <form onSubmit={submit} className="space-y-7">
-      <p className="text-sm text-muted">확인된 경험만 적으세요. 없는 항목은 비워 두면 정보 부족으로 분류됩니다.</p>
+    <form onSubmit={submit} className="w-full space-y-4 lg:max-w-[1000px]">
+      <Card title="경험">
+        <p className="text-sm text-muted">확인된 경험만 적으세요. 없는 항목은 비워 두면 정보 부족으로 분류됩니다.</p>
 
-      <ListField
-        label="보유 기술"
-        hint="쉼표로 구분"
-        value={exp.skills.join(", ")}
-        onChange={(text) => setExp({ ...exp, skills: splitList(text) })}
-        placeholder="TypeScript, React, SQL"
-      />
+        <ListField
+          label="보유 기술"
+          hint="쉼표로 구분"
+          value={exp.skills.join(", ")}
+          onChange={(text) => setExp({ ...exp, skills: splitList(text) })}
+          placeholder="TypeScript, React, SQL"
+        />
 
-      <div>
-        <div className="flex items-center justify-between">
-          <span className="field-label">프로젝트</span>
-          {exp.projects.length < 8 ? (
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 text-sm text-lime hover:underline"
-              onClick={() => setExp({ ...exp, projects: [...exp.projects, emptyProject()] })}
-            >
-              <Plus size={14} />
-              추가
-            </button>
-          ) : null}
-        </div>
-        <div className="mt-3 space-y-4">
-          {exp.projects.map((project, index) => (
-            <div key={index} className="space-y-3 rounded-2xl border border-line p-4">
-              <div className="flex items-start justify-between gap-3">
-                <input
-                  value={project.name}
-                  onChange={(event) => updateProject(index, { name: event.target.value })}
-                  className="field-input"
-                  placeholder="프로젝트명"
+        <div>
+          <div className="flex items-center justify-between">
+            <span className="field-label">프로젝트</span>
+            {exp.projects.length < 8 ? (
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 text-sm text-lime hover:underline"
+                onClick={() => setExp({ ...exp, projects: [...exp.projects, emptyProject()] })}
+              >
+                <Plus size={14} />
+                추가
+              </button>
+            ) : null}
+          </div>
+          <div className="mt-3 space-y-4">
+            {exp.projects.map((project, index) => (
+              <div key={index} className="space-y-3 rounded-2xl border border-line p-4">
+                <div className="grid items-start gap-3 lg:grid-cols-2">
+                  <input
+                    value={project.name}
+                    onChange={(event) => updateProject(index, { name: event.target.value })}
+                    className="field-input"
+                    placeholder="프로젝트명"
+                  />
+                  <div className="flex items-start gap-3">
+                    <input
+                      value={project.role}
+                      onChange={(event) => updateProject(index, { role: event.target.value })}
+                      className="field-input"
+                      placeholder="담당 역할"
+                    />
+                    {exp.projects.length > 1 ? (
+                      <button
+                        type="button"
+                        className="btn-ghost shrink-0"
+                        onClick={() =>
+                          setExp({ ...exp, projects: exp.projects.filter((_, i) => i !== index) })
+                        }
+                        aria-label="프로젝트 삭제"
+                      >
+                        <Trash size={16} />
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <textarea
+                    value={project.description}
+                    onChange={(event) => updateProject(index, { description: event.target.value })}
+                    className="field-input min-h-20 resize-y"
+                    placeholder="프로젝트 목적 / 주요 기능"
+                  />
+                  <textarea
+                    value={project.work}
+                    onChange={(event) => updateProject(index, { work: event.target.value })}
+                    className="field-input min-h-20 resize-y"
+                    placeholder="담당 작업 / 성과"
+                  />
+                </div>
+                <TechInput
+                  key={index}
+                  value={project.tech}
+                  onChange={(tech) => updateProject(index, { tech })}
                 />
-                {exp.projects.length > 1 ? (
-                  <button
-                    type="button"
-                    className="btn-ghost shrink-0"
-                    onClick={() =>
-                      setExp({ ...exp, projects: exp.projects.filter((_, i) => i !== index) })
-                    }
-                    aria-label="프로젝트 삭제"
-                  >
-                    <Trash size={16} />
-                  </button>
-                ) : null}
               </div>
-              <input
-                value={project.role}
-                onChange={(event) => updateProject(index, { role: event.target.value })}
-                className="field-input"
-                placeholder="역할"
-              />
-              <textarea
-                value={project.description}
-                onChange={(event) => updateProject(index, { description: event.target.value })}
-                className="field-input min-h-20 resize-y"
-                placeholder="설명"
-              />
-              <textarea
-                value={project.work}
-                onChange={(event) => updateProject(index, { work: event.target.value })}
-                className="field-input min-h-20 resize-y"
-                placeholder="한 일"
-              />
-              <TechInput
-                key={index}
-                value={project.tech}
-                onChange={(tech) => updateProject(index, { tech })}
-              />
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
 
-      <ListField
-        label="대외활동 / 교육"
-        hint="항목은 줄바꿈 또는 쉼표"
-        value={exp.activities.join("\n")}
-        onChange={(text) => setExp({ ...exp, activities: splitLines(text) })}
-        placeholder="부트캠프, 동아리, 봉사 등"
-        multiline
-      />
-      <ListField
-        label="인턴 / 경력"
-        value={exp.internships.join("\n")}
-        onChange={(text) => setExp({ ...exp, internships: splitLines(text) })}
-        placeholder="회사, 기간, 한 일"
-        multiline
-      />
-      <ListField
-        label="자격증"
-        hint="쉼표로 구분"
-        value={exp.certificates.join(", ")}
-        onChange={(text) => setExp({ ...exp, certificates: splitList(text) })}
-        placeholder="정보처리기사, SQLD"
-      />
+        <div className="grid gap-3 lg:grid-cols-2">
+          <Foldable title="대외활동 / 교육" filled={exp.activities.length > 0}>
+            <ListField
+              label="대외활동 / 교육"
+              hint="항목은 줄바꿈 또는 쉼표"
+              value={exp.activities.join("\n")}
+              onChange={(text) => setExp({ ...exp, activities: splitLines(text) })}
+              placeholder="부트캠프, 동아리, 봉사 등"
+              multiline
+            />
+          </Foldable>
+          <Foldable title="인턴 / 경력" filled={exp.internships.length > 0}>
+            <ListField
+              label="인턴 / 경력"
+              value={exp.internships.join("\n")}
+              onChange={(text) => setExp({ ...exp, internships: splitLines(text) })}
+              placeholder="회사, 기간, 한 일"
+              multiline
+            />
+          </Foldable>
+        </div>
 
+        <Foldable title="자격증" filled={exp.certificates.length > 0}>
+          <ListField
+            label="자격증"
+            hint="쉼표로 구분"
+            value={exp.certificates.join(", ")}
+            onChange={(text) => setExp({ ...exp, certificates: splitList(text) })}
+            placeholder="정보처리기사, SQLD"
+          />
+        </Foldable>
+      </Card>
       <div className="flex flex-wrap gap-3">
         <button type="button" className="btn-ghost" onClick={onBack} disabled={busy}>
           이전
@@ -172,6 +187,36 @@ export function ExperienceForm({ value, onChange, onBack, onSubmit, busy }: Prop
     );
     setExp({ ...exp, projects });
   }
+}
+
+function Foldable({
+  title,
+  filled,
+  children,
+}: {
+  title: string;
+  filled: boolean;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(filled);
+
+  return (
+    <div className="rounded-xl border border-line">
+      <button
+        type="button"
+        className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+      >
+        {title}
+        <span className="flex items-center gap-2 text-xs font-normal text-muted">
+          {filled ? "입력됨" : "선택"}
+          <CaretDown size={14} className={open ? "rotate-180" : undefined} />
+        </span>
+      </button>
+      {open ? <div className="border-t border-line px-4 py-3">{children}</div> : null}
+    </div>
+  );
 }
 
 function splitList(text: string): string[] {
@@ -203,9 +248,6 @@ function ListField({
   placeholder: string;
   multiline?: boolean;
 }) {
-  // 입력값을 그대로 보여주는 로컬 상태를 따로 둔다. 매 입력마다 부모가 배열로
-  // 잘라 다시 join한 값을 그려주면, 방금 입력한 "," 가 filter(Boolean)에 걸려
-  // 사라져 버려서 쉼표를 입력할 수 없게 된다.
   const [text, setText] = useState(value);
 
   function handleChange(next: string) {

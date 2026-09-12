@@ -1,4 +1,5 @@
 import type { AnalysisResult, RecommendResult, UserProfile } from "../types.ts";
+import { mockAnalyze, mockRecommend } from "./mock.ts";
 
 function slimProfile(profile: UserProfile): UserProfile {
   return {
@@ -18,6 +19,18 @@ async function readError(response: Response, fallback: string): Promise<string> 
 }
 
 export async function analyzeProfile(profile: UserProfile): Promise<AnalysisResult> {
+  return mockAnalyze(profile);
+}
+
+export async function recommendActivities(
+  profile: UserProfile,
+  analysis: AnalysisResult,
+): Promise<RecommendResult> {
+  return mockRecommend(profile, analysis);
+}
+
+/** Claude API 연결 시 사용할 원본 호출. 지금은 쓰지 않는다. */
+export async function analyzeProfileLive(profile: UserProfile): Promise<AnalysisResult> {
   const response = await fetch("/api/analyze", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -33,7 +46,7 @@ export async function analyzeProfile(profile: UserProfile): Promise<AnalysisResu
   return data.analysis;
 }
 
-export async function recommendActivities(
+export async function recommendActivitiesLive(
   profile: UserProfile,
   analysis: AnalysisResult,
 ): Promise<RecommendResult> {
