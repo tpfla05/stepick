@@ -8,10 +8,11 @@ import { PortfolioFields } from "./components/PortfolioFields.tsx";
 import { ProfileForm } from "./components/ProfileForm.tsx";
 import { analyzeProfile, recommendActivities } from "./lib/api.ts";
 import { LIST_URL } from "./lib/linkareerActivities.ts";
-import { saveSession } from "./lib/storage.ts";
+import { clearSession, loadSession, saveSession } from "./lib/storage.ts";
 import type { AnalysisResult, RecommendResult, UserProfile } from "./types.ts";
 
 type Step = "profile" | "details" | "loading" | "result";
+type LoadPhase = "analyze" | "recommend";
 
 const emptyProfile = (): UserProfile => ({
   targetRole: "",
@@ -22,23 +23,67 @@ const emptyProfile = (): UserProfile => ({
   preferredCategories: [],
 });
 
+function hasEnoughInput(profile: UserProfile): boolean {
+  if (profile.hasPortfolio) {
+    const portfolio = profile.portfolio;
+    const hasUrl = Boolean(portfolio?.urls?.some((url) => /^https?:\/\//i.test(url.trim())));
+    const hasText = Boolean(portfolio?.text?.trim());
+    const hasFile = Boolean(portfolio?.files?.length);
+    return hasUrl || hasText || hasFile;
+  }
+  const experience = profile.experience;
+  if (!experience) return false;
+  return (
+    experience.skills.length > 0 ||
+    experience.projects.some((project) => project.name.trim()) ||
+    experience.activities.length > 0 ||
+    experience.internships.length > 0 ||
+    experience.certificates.length > 0
+  );
+}
+
+function initialSession() {
+  const saved = loadSession();
+  if (!saved?.analysis) return null;
+  return saved;
+}
+
 export default function App() {
-  const [step, setStep] = useState<Step>("profile");
-  const [profile, setProfile] = useState<UserProfile>(emptyProfile);
-  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
-  const [recommend, setRecommend] = useState<RecommendResult | null>(null);
+  const saved = initialSession();
+  const [step, setStep] = useState<Step>(saved ? "result" : "profile");
+  const [profile, setProfile] = useState<UserProfile>(saved?.profile ?? emptyProfile);
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(saved?.analysis ?? null);
+  const [recommend, setRecommend] = useState<RecommendResult | null>(saved?.recommend ?? null);
   const [error, setError] = useState<string | null>(null);
+  const [loadPhase, setLoadPhase] = useState<LoadPhase>("analyze");
+  const [hadPortfolioFiles, setHadPortfolioFiles] = useState(Boolean(saved?.hadPortfolioFiles));
 
   async function runPipeline(nextProfile: UserProfile) {
+    if (!hasEnoughInput(nextProfile)) {
+      const filesDropped =
+        hadPortfolioFiles && nextProfile.hasPortfolio && !nextProfile.portfolio?.files?.length;
+      setError(
+        filesDropped
+          ? "첨부 파일은 이 기기에 저장하지 않아요. 다시 분석할 때 파일을 올려 주세요."
+          : "경험이나 포트폴리오를 하나 이상 입력한 뒤에 분석할 수 있어요.",
+      );
+      if (step === "result") setStep("details");
+      return;
+    }
+
+    const usedFiles = Boolean(nextProfile.portfolio?.files?.length);
     setError(null);
     setAnalysis(null);
     setRecommend(null);
     setProfile(nextProfile);
+    setHadPortfolioFiles(usedFiles);
+    setLoadPhase("analyze");
     setStep("loading");
 
     try {
       const nextAnalysis = await analyzeProfile(nextProfile);
       setAnalysis(nextAnalysis);
+      setLoadPhase("recommend");
       try {
         const nextRecommend = await recommendActivities(nextProfile, nextAnalysis);
         setRecommend(nextRecommend);
@@ -46,6 +91,7 @@ export default function App() {
           profile: nextProfile,
           analysis: nextAnalysis,
           recommend: nextRecommend,
+          hadPortfolioFiles: usedFiles,
         });
       } catch (recommendError) {
         setRecommend({ activities: [] });
@@ -54,6 +100,7 @@ export default function App() {
           profile: nextProfile,
           analysis: nextAnalysis,
           recommend: { activities: [] },
+          hadPortfolioFiles: usedFiles,
         });
       }
       setStep("result");
@@ -64,11 +111,14 @@ export default function App() {
   }
 
   function reset() {
+    clearSession();
     setStep("profile");
     setProfile(emptyProfile());
     setAnalysis(null);
     setRecommend(null);
     setError(null);
+    setLoadPhase("analyze");
+    setHadPortfolioFiles(false);
   }
 
   return (
@@ -87,6 +137,7 @@ export default function App() {
           onBack={() => setStep("profile")}
           onSubmit={(next) => void runPipeline(next)}
           busy={false}
+          error={error}
         />
       ) : null}
 
@@ -97,10 +148,11 @@ export default function App() {
           onBack={() => setStep("profile")}
           onSubmit={(next) => void runPipeline(next)}
           busy={false}
+          error={error}
         />
       ) : null}
 
-      {step === "loading" ? <LoadingView /> : null}
+      {step === "loading" ? <LoadingView phase={loadPhase} /> : null}
 
       {step === "result" ? (
         <div className="space-y-10">
@@ -111,11 +163,11 @@ export default function App() {
               <p className="text-xs font-medium tracking-[0.18em] text-lime uppercase">추천</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight">지금 지원할 활동</h2>
               <p className="mt-2 text-sm text-muted">
-                희망 직무와 부족한 역량에 맞는{" "}
+                희망 직무와 맞는, 지금 모집 중인{" "}
                 <a href={LIST_URL} className="text-lime underline" target="_blank" rel="noreferrer">
                   링커리어
                 </a>
-                공고만 골랐어요. 직무와 먼 서포터즈는 빼요.
+                {" "}공고만 골랐어요.
               </p>
             </div>
             {recommend && recommend.activities.length === 0 ? (
@@ -131,6 +183,12 @@ export default function App() {
               </div>
             ) : null}
           </section>
+
+          {hadPortfolioFiles ? (
+            <p className="text-sm text-muted">
+              첨부 파일은 이 기기에 저장하지 않아요. 다시 분석할 때 파일을 올려 주세요.
+            </p>
+          ) : null}
 
           {error ? <p className="text-sm text-red-700">{error}</p> : null}
 

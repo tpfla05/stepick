@@ -36,6 +36,12 @@ export function AnalysisView({ profile, analysis }: Props) {
             tone="gap"
             showEvidence
           />
+          <Group
+            title="판단하지 못한 항목"
+            empty="자료가 부족해 보류한 항목은 없습니다."
+            items={analysis.unknowns.slice(0, 3)}
+            tone="unknown"
+          />
         </div>
       </div>
     </section>
@@ -52,7 +58,7 @@ function Group({
   title: string;
   empty: string;
   items: CompetencyItem[];
-  tone: "strength" | "gap";
+  tone: "strength" | "gap" | "unknown";
   showEvidence?: boolean;
 }) {
   return (

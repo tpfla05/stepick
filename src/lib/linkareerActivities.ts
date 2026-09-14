@@ -18,7 +18,7 @@ type CatalogItem = {
 
 const ROLE_GROUPS: Array<{ keys: string[]; domains: string[] }> = [
   {
-    keys: ["프론트", "백엔드", "풀스택", "개발", "엔지니어", "프로그래머", "소프트웨어", "앱", "웹 개발", "클라이언트"],
+    keys: ["프론트", "백엔드", "풀스택", "개발", "엔지니어", "프로그래머", "소프트웨어", "웹 개발", "클라이언트"],
     domains: ["개발", "AI"],
   },
   {
@@ -31,10 +31,12 @@ const ROLE_GROUPS: Array<{ keys: string[]; domains: string[] }> = [
     domains: ["마케팅", "콘텐츠"],
   },
   { keys: ["콘텐츠", "에디터", "영상", "카피", "크리에이터"], domains: ["콘텐츠", "마케팅"] },
-  { keys: ["기획", "프로덕트", "pm", "po"], domains: ["기획", "마케팅"] },
+  { keys: ["기획", "프로덕트", "프로덕트 매니저", "프로덕트 오너"], domains: ["기획", "마케팅"] },
   { keys: ["금융", "증권", "회계", "은행", "투자", "핀테크", "애널리스트"], domains: ["금융", "데이터"] },
   { keys: ["영업", "세일즈"], domains: ["영업", "마케팅"] },
   { keys: ["디자인", "ui", "ux"], domains: ["디자인", "콘텐츠"] },
+  { keys: ["인사", "hr", "채용", "조직문화"], domains: ["인사", "기획"] },
+  { keys: ["연구", "연구원", "r&d"], domains: ["연구", "데이터"] },
 ];
 
 /** https://linkareer.com/list/activity 모집 중 공고. 확인: 2026-09-14 */
@@ -64,28 +66,28 @@ const CATALOG: CatalogItem[] = [
     reason: "빅데이터·AI·핀테크를 수업과 기업 프로젝트로 이어서 직무 실무를 깊게 채울 수 있습니다.",
   },
   {
-    title: "[앵콜모집] 무스펙도 OK! AI로 직접 해보는 영업·마케팅 실무 프로젝트",
-    organization: "한국대학생인재협회",
-    category: "교육/부트캠프",
+    title: "[YP] 2026 KOICA ODA Young Professional 인턴 모집",
+    organization: "한국국제협력단",
+    category: "인턴",
     startDate: "2026-09-07",
-    endDate: "2026-09-16",
-    target: "대학생·취준생",
-    url: "https://linkareer.com/activity/348634",
-    domains: ["마케팅", "영업", "콘텐츠"],
-    tags: ["마케팅", "영업", "콘텐츠", "협업"],
-    reason: "11주 동안 영업·마케팅 캠페인을 기획하고 실행해 직무 실무 공백을 메울 수 있습니다.",
+    endDate: "2026-10-05",
+    target: "청년 구직자",
+    url: "https://linkareer.com/activity/346628",
+    domains: ["기획", "인사"],
+    tags: ["기획", "협업", "직무 특화 실무"],
+    reason: "국제개발 현장에서 기획·운영을 맡으므로 실무와 협업 공백을 채울 수 있습니다.",
   },
   {
-    title: "링커리어 콘텐츠 에디터 28기 모집",
-    organization: "링커리어",
+    title: "롯데 밸유 for ESG 5기 대학생 봉사단 모집",
+    organization: "롯데지주",
     category: "대외활동",
-    startDate: "2026-09-10",
-    endDate: "2026-09-17",
-    target: "대학 재학생·휴학생·유학생·졸업유예생",
-    url: "https://linkareer.com/activity/349663",
-    domains: ["콘텐츠", "마케팅"],
-    tags: ["콘텐츠", "협업"],
-    reason: "카드뉴스 기획·제작이 주 업무라 콘텐츠 실무가 부족한 경우에 맞습니다.",
+    startDate: "2026-09-01",
+    endDate: "2026-09-30",
+    target: "대학 재학생·휴학생 (3~5인 팀)",
+    url: "https://linkareer.com/activity/346522",
+    domains: ["기획"],
+    tags: ["기획", "문제 정의", "협업"],
+    reason: "ESG 과제를 팀으로 기획·실행하므로 문제 정의와 협업 경험을 남길 수 있습니다.",
   },
   {
     title: "[키움증권] 커뮤니티 서포터즈 4기 모집",
@@ -112,6 +114,18 @@ const CATALOG: CatalogItem[] = [
     reason: "금융 자격 학습과 포스팅을 같이 하므로 금융 직무 준비에 가깝습니다.",
   },
   {
+    title: "[굿네이버스] e-brand 5기 모집 (브랜딩/환경/마케팅)",
+    organization: "굿네이버스",
+    category: "대외활동",
+    startDate: "2026-09-01",
+    endDate: "2026-09-20",
+    target: "대학생·일반인",
+    url: "https://linkareer.com/activity/347495",
+    domains: ["마케팅", "콘텐츠"],
+    tags: ["마케팅", "콘텐츠", "브랜드"],
+    reason: "브랜드와 캠페인을 직접 만들므로 마케팅·콘텐츠 실무가 부족할 때 맞습니다.",
+  },
+  {
     title: "제3기 <로드 두드림(Road to dream) 해외연수 프로그램> 참여자 모집",
     organization: "재단법인 자유기업원",
     category: "대외활동",
@@ -122,30 +136,6 @@ const CATALOG: CatalogItem[] = [
     domains: ["기획"],
     tags: ["기획", "문제 정의"],
     reason: "연수 계획을 직접 세워 발표하므로 기획·문제 정의가 약한 경우에 가깝습니다.",
-  },
-  {
-    title: "블라인드 캠퍼스 서포터즈 1기 모집",
-    organization: "팀블라인드세일즈앤마케팅코리아",
-    category: "대외활동",
-    startDate: "2026-08-16",
-    endDate: "2026-09-15",
-    target: "대학생·대학원생",
-    url: "https://linkareer.com/activity/345794",
-    domains: ["마케팅", "콘텐츠"],
-    tags: ["콘텐츠", "마케팅"],
-    reason: "서비스 홍보 콘텐츠가 중심이라 마케팅·콘텐츠 직무에 맞습니다.",
-  },
-  {
-    title: "독서 플랫폼 윌라 대학생 서포터즈 '윌프렌즈' 4기 모집",
-    organization: "(주)인플루엔셜",
-    category: "대외활동",
-    startDate: "2026-09-01",
-    endDate: "2026-09-15",
-    target: "수도권 대학 재학생·휴학생",
-    url: "https://linkareer.com/activity/347174",
-    domains: ["콘텐츠", "마케팅"],
-    tags: ["콘텐츠", "마케팅", "협업"],
-    reason: "SNS 콘텐츠와 브랜드 마케팅이 주라 콘텐츠·마케팅 공백에 맞습니다.",
   },
   {
     title: "컨디션 대학생 서포터즈, 컨디션 C.R.E.W 2기 모집",
@@ -167,12 +157,15 @@ function todayKst(): string {
 
 export function domainsForRole(role: string): string[] {
   const lower = role.toLowerCase();
-  return [...new Set(ROLE_GROUPS.filter((group) => group.keys.some((key) => lower.includes(key))).flatMap((group) => group.domains))];
+  return [
+    ...new Set(
+      ROLE_GROUPS.filter((group) => group.keys.some((key) => lower.includes(key))).flatMap((group) => group.domains),
+    ),
+  ];
 }
 
 export function listOpenLinkareerActivities(today = todayKst()): CatalogItem[] {
-  const open = CATALOG.filter((item) => item.endDate >= today);
-  return open.length > 0 ? open : CATALOG;
+  return CATALOG.filter((item) => item.endDate >= today);
 }
 
 function gapHits(item: CatalogItem, gaps: string[]): string[] {
@@ -182,6 +175,9 @@ function gapHits(item: CatalogItem, gaps: string[]): string[] {
 }
 
 function scoreItem(item: CatalogItem, profile: UserProfile, gaps: string[]): number {
+  const preferred = profile.preferredCategories ?? [];
+  if (preferred.length > 0 && !preferred.includes(item.category)) return 0;
+
   const roleDomains = domainsForRole(profile.targetRole);
   const domainHits = item.domains.filter((domain) => roleDomains.includes(domain));
   if (roleDomains.length > 0 && domainHits.length === 0) return 0;
@@ -189,9 +185,6 @@ function scoreItem(item: CatalogItem, profile: UserProfile, gaps: string[]): num
   let score = 48;
   score += domainHits.length * 14;
   score += gapHits(item, gaps).length * 10;
-
-  const preferred = profile.preferredCategories ?? [];
-  if (preferred.length > 0 && preferred.includes(item.category)) score += 8;
 
   const role = profile.targetRole.toLowerCase();
   if (role && item.tags.some((tag) => role.includes(tag.toLowerCase()))) score += 6;
@@ -205,8 +198,7 @@ export function recommendFromLinkareer(
 ): Activity[] {
   const today = todayKst();
   const gaps = analysis.gaps.slice(0, 3).map((gap) => gap.name);
-  const open = CATALOG.filter((item) => item.endDate >= today);
-  const pool = open.length > 0 ? open : CATALOG;
+  const pool = listOpenLinkareerActivities(today);
 
   return pool
     .map((item) => {

@@ -9,6 +9,7 @@ type Props = {
   onBack: () => void;
   onSubmit: (profile: UserProfile) => void;
   busy: boolean;
+  error?: string | null;
 };
 
 const emptyProject = (): ProjectExperience => ({
@@ -19,7 +20,7 @@ const emptyProject = (): ProjectExperience => ({
   tech: [],
 });
 
-export function ExperienceForm({ value, onChange, onBack, onSubmit, busy }: Props) {
+export function ExperienceForm({ value, onChange, onBack, onSubmit, busy, error }: Props) {
   const exp = value.experience ?? {
     skills: [],
     projects: [emptyProject()],
@@ -32,19 +33,9 @@ export function ExperienceForm({ value, onChange, onBack, onSubmit, busy }: Prop
     onChange({ ...value, experience: next });
   }
 
-  function ready() {
-    return (
-      exp.skills.length > 0 ||
-      exp.projects.some((project) => project.name.trim()) ||
-      exp.activities.length > 0 ||
-      exp.internships.length > 0 ||
-      exp.certificates.length > 0
-    );
-  }
-
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (!ready() || busy) return;
+    if (busy) return;
     const next: UserProfile = {
       ...value,
       experience: {
@@ -170,11 +161,12 @@ export function ExperienceForm({ value, onChange, onBack, onSubmit, busy }: Prop
           />
         </Foldable>
       </Card>
+      {error ? <p className="text-sm text-red-700">{error}</p> : null}
       <div className="flex flex-wrap gap-3">
         <button type="button" className="btn-ghost" onClick={onBack} disabled={busy}>
           이전
         </button>
-        <button type="submit" className="btn-primary" disabled={!ready() || busy}>
+        <button type="submit" className="btn-primary" disabled={busy}>
           {busy ? "분석 중…" : "역량 분석하기"}
         </button>
       </div>

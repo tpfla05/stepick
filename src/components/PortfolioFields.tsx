@@ -9,9 +9,10 @@ type Props = {
   onBack: () => void;
   onSubmit: (profile: UserProfile) => void;
   busy: boolean;
+  error?: string | null;
 };
 
-export function PortfolioFields({ value, onChange, onBack, onSubmit, busy }: Props) {
+export function PortfolioFields({ value, onChange, onBack, onSubmit, busy, error }: Props) {
   const portfolio = value.portfolio ?? {};
   const urls = portfolio.urls ?? [""];
   const files = portfolio.files ?? [];
@@ -32,15 +33,9 @@ export function PortfolioFields({ value, onChange, onBack, onSubmit, busy }: Pro
     setPortfolio({ ...portfolio, files: [...files, ...added].slice(0, 3) });
   }
 
-  function ready() {
-    const hasUrl = urls.some((url) => /^https?:\/\//i.test(url.trim()));
-    const hasText = Boolean(portfolio.text?.trim());
-    return hasUrl || hasText || files.length > 0;
-  }
-
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (!ready() || busy) return;
+    if (busy) return;
     const next: UserProfile = {
       ...value,
       portfolio: {
@@ -157,11 +152,12 @@ export function PortfolioFields({ value, onChange, onBack, onSubmit, busy }: Pro
         ) : null}
       </div>
 
+      {error ? <p className="text-sm text-red-700">{error}</p> : null}
       <div className="flex flex-wrap gap-3">
         <button type="button" className="btn-ghost" onClick={onBack} disabled={busy}>
           이전
         </button>
-        <button type="submit" className="btn-primary" disabled={!ready() || busy}>
+        <button type="submit" className="btn-primary" disabled={busy}>
           {busy ? "분석 중…" : "역량 분석하기"}
         </button>
       </div>

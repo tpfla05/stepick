@@ -6,11 +6,13 @@ export type StoredSession = {
   profile: UserProfile;
   analysis: AnalysisResult | null;
   recommend: RecommendResult | null;
+  hadPortfolioFiles?: boolean;
 };
 
 export function saveSession(session: StoredSession): void {
   const stored: StoredSession = {
     ...session,
+    hadPortfolioFiles: Boolean(session.hadPortfolioFiles),
     profile: {
       ...session.profile,
       portfolio: session.profile.portfolio
@@ -35,5 +37,13 @@ export function loadSession(): StoredSession | null {
     return JSON.parse(raw) as StoredSession;
   } catch {
     return null;
+  }
+}
+
+export function clearSession(): void {
+  try {
+    localStorage.removeItem(KEY);
+  } catch {
+    // ignore quota / private mode
   }
 }
