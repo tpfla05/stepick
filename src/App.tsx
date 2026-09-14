@@ -7,6 +7,7 @@ import { PageShell } from "./components/PageShell.tsx";
 import { PortfolioFields } from "./components/PortfolioFields.tsx";
 import { ProfileForm } from "./components/ProfileForm.tsx";
 import { analyzeProfile, recommendActivities } from "./lib/api.ts";
+import { LIST_URL } from "./lib/linkareerActivities.ts";
 import { saveSession } from "./lib/storage.ts";
 import type { AnalysisResult, RecommendResult, UserProfile } from "./types.ts";
 
@@ -37,14 +38,24 @@ export default function App() {
 
     try {
       const nextAnalysis = await analyzeProfile(nextProfile);
-      const nextRecommend = await recommendActivities(nextProfile, nextAnalysis);
       setAnalysis(nextAnalysis);
-      setRecommend(nextRecommend);
-      saveSession({
-        profile: nextProfile,
-        analysis: nextAnalysis,
-        recommend: nextRecommend,
-      });
+      try {
+        const nextRecommend = await recommendActivities(nextProfile, nextAnalysis);
+        setRecommend(nextRecommend);
+        saveSession({
+          profile: nextProfile,
+          analysis: nextAnalysis,
+          recommend: nextRecommend,
+        });
+      } catch (recommendError) {
+        setRecommend({ activities: [] });
+        setError(recommendError instanceof Error ? recommendError.message : "활동 추천에 실패했습니다.");
+        saveSession({
+          profile: nextProfile,
+          analysis: nextAnalysis,
+          recommend: { activities: [] },
+        });
+      }
       setStep("result");
     } catch (pipelineError) {
       setError(pipelineError instanceof Error ? pipelineError.message : "분석에 실패했습니다.");
@@ -99,10 +110,17 @@ export default function App() {
             <div>
               <p className="text-xs font-medium tracking-[0.18em] text-lime uppercase">추천</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight">지금 지원할 활동</h2>
+              <p className="mt-2 text-sm text-muted">
+                희망 직무와 부족한 역량에 맞는{" "}
+                <a href={LIST_URL} className="text-lime underline" target="_blank" rel="noreferrer">
+                  링커리어
+                </a>
+                공고만 골랐어요. 직무와 먼 서포터즈는 빼요.
+              </p>
             </div>
             {recommend && recommend.activities.length === 0 ? (
               <p className="text-sm text-muted">
-                원문에서 마감일과 주최를 확인한, 지금 모집 중인 활동을 찾지 못했습니다.
+                원문에서 마감일과 주최를 확인한, 지금 직무와 맞는 모집 활동을 찾지 못했습니다.
               </p>
             ) : null}
             {recommend ? (

@@ -27,7 +27,7 @@ export function AnalysisView({ profile, analysis }: Props) {
         <div className="space-y-5">
           <Card title="직무 준비도">
             <p className="text-4xl font-semibold tabular-nums text-lime">{analysis.readinessScore}</p>
-            <p className="mt-2 text-sm text-muted">입력에서 확인된 경험만으로 본 예시 점수입니다.</p>
+            <p className="mt-2 text-sm text-muted">입력에서 확인된 경험만으로 본 점수입니다.</p>
           </Card>
           <Group
             title="보완이 필요한 역량"

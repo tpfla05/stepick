@@ -1,4 +1,5 @@
 import type { AnalysisResult, RecommendResult, UserProfile } from "../types.ts";
+import { recommendFromLinkareer } from "./linkareerActivities.ts";
 
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -63,52 +64,7 @@ export async function mockRecommend(
   analysis: AnalysisResult,
 ): Promise<RecommendResult> {
   await wait(400);
-  const gapNames = analysis.gaps.slice(0, 3).map((gap) => gap.name);
-  const role = profile.targetRole.trim() || "희망 직무";
   return {
-    activities: [
-      {
-        title: `${role} 팀 프로젝트 부트캠프`,
-        organization: "예시 교육기관",
-        category: "교육/부트캠프",
-        startDate: "2026-09-20",
-        endDate: "2026-10-31",
-        target: "취업 준비생",
-        url: "https://linkareer.com",
-        source: "예시 공고",
-        relatedSkills: gapNames.slice(0, 2),
-        recommendationScore: 92,
-        recommendationReason: "배포와 협업을 한 사이클에서 채워 부족한 역량을 동시에 보완할 수 있습니다.",
-        checkedAt: "2026-09-12",
-      },
-      {
-        title: "실서비스 아이디어 공모전",
-        organization: "예시 주최기관",
-        category: "공모전",
-        startDate: "2026-09-15",
-        endDate: "2026-10-18",
-        target: "대학생·졸업예정자",
-        url: "https://linkareer.com",
-        source: "예시 공고",
-        relatedSkills: [gapNames[2] ?? "직무 특화 실무"],
-        recommendationScore: 84,
-        recommendationReason: "직무와 맞닿은 문제를 기획부터 결과물까지 남길 수 있습니다.",
-        checkedAt: "2026-09-12",
-      },
-      {
-        title: "주말 해커톤",
-        organization: "예시 커뮤니티",
-        category: "프로젝트/해커톤",
-        startDate: "2026-09-26",
-        endDate: "2026-09-27",
-        target: "누구나",
-        url: "https://linkareer.com",
-        source: "예시 공고",
-        relatedSkills: gapNames,
-        recommendationScore: 79,
-        recommendationReason: "짧은 기간에 팀으로 만들고 시연까지 가는 경험이 부족 역량과 잘 맞습니다.",
-        checkedAt: "2026-09-12",
-      },
-    ],
+    activities: recommendFromLinkareer(profile, analysis),
   };
 }

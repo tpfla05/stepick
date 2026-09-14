@@ -5,6 +5,12 @@
 [build.environment]
   NODE_VERSION = "22"
 
+[functions."analyze"]
+  timeout = 60
+
+[functions."recommend"]
+  timeout = 60
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

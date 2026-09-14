@@ -50,10 +50,30 @@ function asStringArray(value: unknown): string[] {
 
 function asIsoDate(value: unknown): string | null {
   const text = asString(value);
-  if (!text || !ISO_DATE.test(text)) return null;
-  const time = Date.parse(`${text}T00:00:00+09:00`);
+  if (!text) return null;
+  const dotted = text.match(/^(\d{4})[.\-/](\d{1,2})[.\-/](\d{1,2})$/);
+  const korean = text.match(/^(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
+  const parts = dotted ?? korean;
+  const iso = parts
+    ? `${parts[1]}-${parts[2].padStart(2, "0")}-${parts[3].padStart(2, "0")}`
+    : text;
+  if (!ISO_DATE.test(iso)) return null;
+  const time = Date.parse(`${iso}T00:00:00+09:00`);
   if (Number.isNaN(time)) return null;
-  return text;
+  return iso;
+}
+
+function asScore(value: unknown, fallback: number): number {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return Math.min(100, Math.max(0, Math.round(value)));
+  }
+  if (typeof value === "string") {
+    const parsed = Number(value.trim());
+    if (Number.isFinite(parsed)) {
+      return Math.min(100, Math.max(0, Math.round(parsed)));
+    }
+  }
+  return fallback;
 }
 
 function asPriority(value: unknown): number | undefined {
@@ -105,10 +125,7 @@ export function parseAnalysis(raw: unknown): AnalysisResult {
         .filter((item): item is CompetencyItem => item !== null)
     : [];
 
-  const readiness =
-    typeof record.readinessScore === "number" && Number.isFinite(record.readinessScore)
-      ? Math.max(0, Math.min(100, Math.round(record.readinessScore)))
-      : 0;
+  const readiness = asScore(record.readinessScore, 0);
 
   return {
     summary,
@@ -135,40 +152,35 @@ function parseActivity(value: unknown, today: string, checkedAt: string): Activi
   const url = asString(record.url);
   const reason = asString(record.recommendationReason);
   const category = asString(record.category);
-  if (!title || !url || !reason) return null;
-  if (!/^https?:\/\//i.test(url)) return null;
-  if (!category || !CATEGORIES.has(category as ActivityCategory)) return null;
+  if (!title && !url) return null;
 
   const endDate = asIsoDate(record.endDate);
-  if (!endDate) return null;
-  if (endDate < today) return null;
+  if (endDate && endDate < today) return null;
 
-  const scoreRaw = record.recommendationScore;
-  const score =
-    typeof scoreRaw === "number" && Number.isFinite(scoreRaw)
-      ? Math.min(100, Math.max(0, Math.round(scoreRaw)))
-      : null;
-  if (score === null) return null;
+  const score = asScore(record.recommendationScore, 70);
+  const resolvedCategory = category && CATEGORIES.has(category as ActivityCategory)
+    ? (category as ActivityCategory)
+    : "대외활동";
 
   return {
-    title,
+    title: title ?? url ?? "활동",
     organization: asString(record.organization),
-    category: category as ActivityCategory,
+    category: resolvedCategory,
     startDate: asIsoDate(record.startDate),
     endDate,
     target: asString(record.target),
-    url,
-    source: asString(record.source) ?? hostFromUrl(url),
+    url: url ?? "",
+    source: asString(record.source) ?? (url ? hostFromUrl(url) : "링커리어"),
     relatedSkills: asStringArray(record.relatedSkills),
     recommendationScore: score,
-    recommendationReason: reason,
+    recommendationReason: reason ?? "부족 역량을 보완할 수 있는 모집 공고입니다.",
     checkedAt,
   };
 }
 
 export function parseRecommend(raw: unknown, today: string): RecommendResult {
   if (!raw || typeof raw !== "object") {
-    throw new Error("추천 결과 형식이 올바르지 않습니다.");
+    return { activities: [] };
   }
   const record = raw as Record<string, unknown>;
   const list = Array.isArray(record.activities) ? record.activities : [];

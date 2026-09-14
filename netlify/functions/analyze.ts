@@ -62,7 +62,7 @@ export default async (req: Request) => {
   try {
     const message = await runClaude({
       system: ANALYZE_SYSTEM,
-      maxTokens: 4096,
+      maxTokens: 2500,
       messages: [{ role: "user", content: blocks }],
       tools:
         urls.length > 0

@@ -1,5 +1,4 @@
 import type { AnalysisResult, RecommendResult, UserProfile } from "../types.ts";
-import { mockAnalyze, mockRecommend } from "./mock.ts";
 
 function slimProfile(profile: UserProfile): UserProfile {
   return {
@@ -19,17 +18,16 @@ async function readError(response: Response, fallback: string): Promise<string> 
 }
 
 export async function analyzeProfile(profile: UserProfile): Promise<AnalysisResult> {
-  return mockAnalyze(profile);
+  return analyzeProfileLive(profile);
 }
 
 export async function recommendActivities(
   profile: UserProfile,
   analysis: AnalysisResult,
 ): Promise<RecommendResult> {
-  return mockRecommend(profile, analysis);
+  return recommendActivitiesLive(profile, analysis);
 }
 
-/** Claude API 연결 시 사용할 원본 호출. 지금은 쓰지 않는다. */
 export async function analyzeProfileLive(profile: UserProfile): Promise<AnalysisResult> {
   const response = await fetch("/api/analyze", {
     method: "POST",
@@ -58,5 +56,9 @@ export async function recommendActivitiesLive(
   if (!response.ok) {
     throw new Error(await readError(response, "활동 추천을 시작하지 못했습니다."));
   }
-  return (await response.json()) as RecommendResult;
+  const data = (await response.json()) as RecommendResult;
+  if (!data || !Array.isArray(data.activities)) {
+    throw new Error("추천 결과가 비어 있습니다.");
+  }
+  return data;
 }

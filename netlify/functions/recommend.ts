@@ -1,4 +1,9 @@
 import type { Config } from "@netlify/functions";
+import type { Activity } from "../../src/types.ts";
+import {
+  listOpenLinkareerActivities,
+  recommendFromLinkareer,
+} from "../../src/lib/linkareerActivities.ts";
 import { jsonError, mapClaudeError, runClaude, textFromMessage } from "./_shared/claude.ts";
 import { extractJson, parseAnalysis, parseRecommend, todayKst } from "./_shared/parse.ts";
 import { parseUserProfile, profileToText } from "./_shared/profile.ts";
@@ -30,12 +35,14 @@ export default async (req: Request) => {
   }
 
   const today = todayKst();
+  const catalog = listOpenLinkareerActivities(today);
+  const fallback = recommendFromLinkareer(profile, analysis);
   const focusedAnalysis = { ...analysis, gaps: analysis.gaps.slice(0, 3) };
 
   try {
     const message = await runClaude({
       system: RECOMMEND_SYSTEM,
-      maxTokens: 8192,
+      maxTokens: 2500,
       messages: [
         {
           role: "user",
@@ -48,27 +55,98 @@ export default async (req: Request) => {
                 : undefined,
             }),
             analysisJson: JSON.stringify(focusedAnalysis),
+            catalogJson: JSON.stringify(catalog),
           }),
         },
-      ],
-      tools: [
-        { type: "web_search_20260209", name: "web_search", max_uses: 4 },
-        { type: "web_fetch_20260209", name: "web_fetch", max_uses: 5 },
       ],
     });
 
     const text = textFromMessage(message);
-    if (!text) {
-      return jsonError("추천 결과를 받지 못했습니다.", 502);
-    }
-
-    const result = parseRecommend(extractJson(text), today);
-    return Response.json(result);
+    const parsed = text ? parseRecommend(extractJson(text), today) : { activities: [] };
+    const activities = attachCatalogFields(today, parsed.activities, catalog);
+    return Response.json({ activities: activities.length > 0 ? activities : fallback });
   } catch (error) {
+    if (fallback.length > 0) {
+      return Response.json({ activities: fallback });
+    }
     const mapped = mapClaudeError(error);
     return jsonError(mapped.message, mapped.status);
   }
 };
+
+function activityId(url: string): string | null {
+  return url.match(/\/activity\/(\d+)/)?.[1] ?? null;
+}
+
+function normalizeUrl(url: string): string {
+  return url.trim().replace(/\/$/, "").split("?")[0];
+}
+
+function compactTitle(title: string): string {
+  return title.replace(/\s+/g, "");
+}
+
+function findCatalogItem(
+  activity: Activity,
+  catalog: ReturnType<typeof listOpenLinkareerActivities>,
+) {
+  if (activity.url) {
+    const normalized = normalizeUrl(activity.url);
+    const byUrl = catalog.find(
+      (entry) => entry.url === activity.url || normalizeUrl(entry.url) === normalized,
+    );
+    if (byUrl) return byUrl;
+    const id = activityId(activity.url);
+    if (id) {
+      const byId = catalog.find((entry) => activityId(entry.url) === id);
+      if (byId) return byId;
+    }
+  }
+
+  if (activity.title) {
+    const compact = compactTitle(activity.title);
+    const exact = catalog.find((entry) => entry.title === activity.title);
+    if (exact) return exact;
+    return catalog.find((entry) => {
+      const entryTitle = compactTitle(entry.title);
+      return entryTitle.includes(compact) || compact.includes(entryTitle.slice(0, 16));
+    });
+  }
+
+  return undefined;
+}
+
+function attachCatalogFields(
+  today: string,
+  parsed: Activity[],
+  catalog: ReturnType<typeof listOpenLinkareerActivities>,
+): Activity[] {
+  const seen = new Set<string>();
+  const hydrated: Activity[] = [];
+
+  for (const activity of parsed) {
+    const item = findCatalogItem(activity, catalog);
+    if (!item || seen.has(item.url)) continue;
+    seen.add(item.url);
+    hydrated.push({
+      title: item.title,
+      organization: item.organization,
+      category: item.category,
+      startDate: item.startDate,
+      endDate: item.endDate,
+      target: item.target,
+      url: item.url,
+      source: "링커리어",
+      relatedSkills: activity.relatedSkills,
+      recommendationScore: activity.recommendationScore,
+      recommendationReason: activity.recommendationReason,
+      checkedAt: today,
+    });
+    if (hydrated.length >= 3) break;
+  }
+
+  return hydrated;
+}
 
 export const config: Config = {
   path: "/api/recommend",

@@ -1,13 +1,16 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { MessageParam } from "@anthropic-ai/sdk/resources/messages";
 
-export const MODEL = "claude-sonnet-4-6";
+export const MODEL = "claude-haiku-4-5-20251001";
 
 export function getClient(): Anthropic {
-  const apiKey =
+  const fromNetlify =
     typeof Netlify === "undefined" ? undefined : Netlify.env.get("ANTHROPIC_API_KEY");
+  const apiKey = fromNetlify || process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    throw new Error("ANTHROPIC_API_KEY가 없습니다. .env 파일에 키를 넣어 주세요.");
+    throw new Error(
+      "ANTHROPIC_API_KEY가 없습니다. 로컬은 .env, 배포는 Netlify 환경변수에 넣어 주세요.",
+    );
   }
   return new Anthropic({ apiKey });
 }
@@ -50,11 +53,29 @@ export async function runClaude(options: {
   tools?: Anthropic.Messages.ToolUnion[];
 }): Promise<Anthropic.Message> {
   const client = getClient();
-  return client.messages.create({
+  const messages: MessageParam[] = [...options.messages];
+  const tools = options.tools && options.tools.length > 0 ? { tools: options.tools } : {};
+
+  let message = await client.messages.create({
     model: MODEL,
     max_tokens: options.maxTokens,
     system: options.system,
-    messages: options.messages,
-    ...(options.tools && options.tools.length > 0 ? { tools: options.tools } : {}),
+    messages,
+    ...tools,
   });
+
+  let extraTurns = 0;
+  while (message.stop_reason === "pause_turn" && extraTurns < 3) {
+    extraTurns += 1;
+    messages.push({ role: "assistant", content: message.content });
+    message = await client.messages.create({
+      model: MODEL,
+      max_tokens: options.maxTokens,
+      system: options.system,
+      messages,
+      ...tools,
+    });
+  }
+
+  return message;
 }
